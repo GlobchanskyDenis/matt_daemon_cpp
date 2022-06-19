@@ -3,7 +3,7 @@
 
 /*	Logger  */
 # define DAEMON_NAME				"Matt_daemon"
-# define LOG_FOLDER					"/var/log/matt_daemon/" //"/var/log/matt_daemon/"
+# define LOG_FOLDER					"/var/log/matt_daemon/"
 # define CHANGE_FILE_EVERY_MINUTE	false
 
 /*	Locker  */
