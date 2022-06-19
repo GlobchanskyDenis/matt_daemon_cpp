@@ -9,7 +9,7 @@ MATT_DAEMON_FILENAMES	=	$(addprefix $(MATT_DAEMON_DIR)/,$(MATT_DAEMON_FILES))
 MATT_DAEMON_OBJ			=	$(addprefix $(MATT_DAEMON_DIR)/,$(MATT_DAEMON_FILES:.c=.o))
 
 PKG_DIR			=	src/pkg
-PKG_FILES		=	reporter.cpp			locker.cpp			\
+PKG_FILES		=	tintinReporter.cpp			locker.cpp			\
 					myTimer.cpp				utils.cpp			\
 					socket.cpp				md5.cpp
 PKG_FILENAMES	=	$(addprefix $(PKG_DIR)/,$(PKG_FILES))

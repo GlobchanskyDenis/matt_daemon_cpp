@@ -1,8 +1,6 @@
 #include "socket.hpp"
 
-int     Socket::Dial(void) {
-	// int server_fd;
-    // struct sockaddr_in address;
+int     Socket::Dial(Reporter* logger) {
     int opt = 1;
     int connType;
 
@@ -16,20 +14,21 @@ int     Socket::Dial(void) {
     /*  Получаем дескриптор сокета. AF_INET это тип домена - IPv4, 0 - это протокол (не смог найти описание что бы это значило)  */
     if ((this->server_fd = socket(AF_INET, connType, 0))
         == 0) {
-        std::cout << "socket failed" << std::endl;
+        logger->LogError("socket failed");
         return (-1);
     }
 
     /*  Задаем опции  */
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        std::cout << "setsockopt" << std::endl;
+        logger->LogError("setsockopt failed");
         return (-1);
     }
     this->address.sin_family = AF_INET;
 
     /*  Заполняю Ip и порт в специальную структуру (IP, PORT содержатся в config.hpp)  */
     if (inet_aton(IP, &(this->address.sin_addr)) == 0) {
-        std::cout << "ip адрес " << IP << " некорректный. Проверьте config.hpp" << std::endl;
+        // std::cout << "ip адрес " << IP << " некорректный. Проверьте config.hpp" << std::endl;
+        logger->LogError("ip адрес некорректный. Проверьте config.hpp");
         return (-1);
     }
     this->address.sin_port = htons(PORT);
@@ -38,14 +37,14 @@ int     Socket::Dial(void) {
 
     /*  Бинд - это привязка созданного сокета к ip адресу и порту  */
     if (bind(server_fd, (struct sockaddr*)&(this->address), this->addrlen) < 0) {
-        std::cout << "bind failed" << std::endl;
+        logger->LogError("bind failed");
         return (-1);
     }
 
     if (IS_TCP_SOCKET) {
          /*  listen означает "пассивный" режим, то есть - сервер  */
         if (listen(server_fd, 3) < 0) {
-            std::cout << "listen failed" << std::endl;
+            logger->LogError("listen failed");
             return (-1);
         }
 
@@ -53,7 +52,7 @@ int     Socket::Dial(void) {
         **  sockfd, создает новый подключенный сокет и возвращает новый файловый дескриптор, ссылающийся на этот
         **  сокет. На этом этапе между клиентом и сервером устанавливается соединение, и они готовы к передаче данных  */
         if ((this->new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&(this->addrlen))) < 0) {
-            std::cout << "accept failed" << std::endl;
+            logger->LogError("accept failed");
             return (-1);
         }
     }

@@ -1,6 +1,6 @@
 #include "config.hpp"
 #include "socket.hpp"
-#include "reporter.hpp"
+#include "tintin_reporter.hpp"
 #include "utils.hpp"
 
 char*	readLogin(Socket* sock) {

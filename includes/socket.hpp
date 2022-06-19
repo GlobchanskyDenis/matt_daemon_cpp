@@ -2,13 +2,14 @@
 # define SOCKET
 
 # include <iostream>
-#include <unistd.h>
-#include <cstring>
-#include <arpa/inet.h>
+# include <unistd.h>
+# include <cstring>
+# include <arpa/inet.h>
 # include <netinet/in.h>
 
 
 # include "config.hpp"
+# include "reporter.hpp"
 # include "utils.hpp"
 
 class Socket
@@ -23,7 +24,7 @@ class Socket
 		char* readTCP(void);
 		char* readUDP(void);
 	public:
-		int  Dial(void); // 0 - OK, -1 - FAIL
+		int  Dial(Reporter*); // 0 - OK, -1 - FAIL
 		void Close(void);
 		char* Read(void);
 		int Write(const char *); // 0 - OK, -1 - FAIL

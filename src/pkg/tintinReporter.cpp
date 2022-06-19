@@ -1,4 +1,4 @@
-#include "reporter.hpp"
+#include "tintin_reporter.hpp"
 
 void	Tintin_reporter::Log(const char *log_message)
 {

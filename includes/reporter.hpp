@@ -1,44 +1,15 @@
-#ifndef TINTIN_REPORTER
-# define TINTIN_REPORTER
+#ifndef REPORTER
+# define REPORTER
 
-# include <iostream>
-# include "config.hpp"
-# include "my_timer.hpp"
-# include "utils.hpp"
-
-class Tintin_reporter
+class Reporter
 {
-	private:
-		FILE			*file;
-		myTimer 		timer;
-		unsigned int	timestamp;
 	public:
-		void 		Log(const char *);
-		void 		LogInfo(const char *);
-		void 		LogWarning(const char *);
-		void 		LogError(const char *);
-		const char	*newFilePath();
-		void		createLogFile();
-		void		closeLogFile();
-		bool		isNeedToChangeLogFile();
-		void		changeLogFile();
-		void		changeLogFileIfNeeded();
+		virtual void	Log(const char *){}
+		virtual void	LogInfo(const char *){}
+		virtual void	LogWarning(const char *){}
+		virtual void	LogError(const char *){}
 
-		/*	Конструктор  */
-		Tintin_reporter()
-		{
-			/*	Зануляю все стартовые поля  */
-			this->file = NULL;
-			this->timestamp = 0;
-
-			this->createLogFile();			
-		};
-
-		/*	Деструктор  */
-		~Tintin_reporter()
-		{
-			this->closeLogFile();
-		};
+		virtual ~Reporter(){}
 };
 
 #endif

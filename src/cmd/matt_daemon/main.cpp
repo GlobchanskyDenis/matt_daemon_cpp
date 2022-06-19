@@ -23,7 +23,7 @@ int main(void)
 {
 	Tintin_reporter* logger = new Tintin_reporter();
 	Socket* sock = new Socket();
-	// int		pid;
+	int		pid;
 
 	if (IsLocked()) {
 		logger->LogWarning("already locked");
@@ -32,28 +32,36 @@ int main(void)
 		exit(-1);
 	}
 
-	// switch (pid = fork()) {
-	// case -1:
-	// 	logger->LogError("cannot create system process");
-	// 	delete logger;
-	// 	delete sock;
-	// 	exit(-1);
-	// case 0:
-	// 	/*	Это процесс - потомок  */
-	// 	// std::cout << "pid " << pid << std::endl;
-	// 	stdin = fopen("/dev/null", "r");
-	// 	stdout = fopen("/dev/null", "w+");
-	// 	stderr = fopen("/dev/null", "w+");
-	// 	break ;
-	// default:
-	// 	/*	Это - процесс - родитель  */
-	// 	std::cout << "pid " << pid << std::endl;
-	// 	exit(0);
-	// }
+	if (opendir(LOG_FOLDER) == NULL)
+	{
+		if (mkdir(LOG_FOLDER, 0777) < 0)
+		{
+			std::cout << "No premission I guess" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	}
+			
+
+	switch (pid = fork()) {
+	case -1:
+		logger->LogError("cannot create system process");
+		delete logger;
+		delete sock;
+		exit(-1);
+	case 0:
+		/*	Это процесс - потомок (демон)  */
+		break ;
+	default:
+		/*	Это - процесс - родитель
+		**	Ничего не закрываю так как это повлияет на потомка
+		**	Вывожу в консоль pid чтобы можно было*/
+		std::cout << "pid " << pid << std::endl;
+		exit(0);
+	}
 
 	Lock();
 
-	if (sock->Dial() < 0) {
+	if (sock->Dial(logger) < 0) {
 		logger->LogError("socket dial failed");
 		Unlock();
 		logger->LogInfo("lock file was removed");
