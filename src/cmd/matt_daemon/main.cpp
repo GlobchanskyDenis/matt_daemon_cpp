@@ -1,7 +1,5 @@
 #include "matt_daemon.hpp"
 
-// using namespace std;
-
 int	logLoop(Socket* sock, Tintin_reporter* logger) {
 	char* line;
 	while (true) {
@@ -19,7 +17,6 @@ int	logLoop(Socket* sock, Tintin_reporter* logger) {
 	return 0;
 }
 
-#include <sys/wait.h>
 /*	Это логика работы супервизора который следит за остановкой дочернего процесса
 **	и по его завершению логгирует и корректно завершает работу  */
 void shutdownSupervisorLoop(Tintin_reporter* logger, int pid) {
@@ -125,26 +122,17 @@ int main(void)
 	/*	Дальше код работы с сокетом  */
 	if (sock->Dial(logger) < 0) {
 		logger->LogError("Socket dial failed");
-		// Unlock();
-		// logger->LogInfo("Lock file was removed");
-		// delete logger;
 		delete sock;
 		exit(-1);
 	}
 
 	if (auth(sock, logger) < 0) {
 		logger->LogError("Auth fail");
-		// Unlock();
-		// logger->LogInfo("Lock file was removed");
-		// delete logger;
 		delete sock;
 		exit(-1);
 	}
 	if (logLoop(sock, logger) < 0) {
 		logger->LogError("Fail reading socket");
-		// Unlock();
-		// logger->LogInfo("Lock file was removed");
-		// delete logger;
 		delete sock;
 		exit(-1);
 	}
