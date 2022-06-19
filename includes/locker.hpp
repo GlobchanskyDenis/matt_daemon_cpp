@@ -5,7 +5,7 @@
 # include "config.hpp"
 
 bool	IsLocked(void);
-void	Lock(void);
+bool	Lock(void);
 void	Unlock(void);
 
 #endif

@@ -2,46 +2,66 @@
 
 void	Tintin_reporter::Log(const char *log_message)
 {
+	int		amount_logged;
+
 	if (this->file == NULL)
 	{
 		std::cout << "Fail: log file not exist" << std::endl;
 		return ;
 	}
 	this->changeLogFileIfNeeded();
-	fprintf(this->file, "[%s] [ LOG ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	amount_logged = fprintf(this->file, "[%s] [ LOG ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	if (amount_logged <= 0) {
+		std::cout << "Fail: amount logged " << amount_logged << std::endl;
+	}
 }
 
 void	Tintin_reporter::LogInfo(const char *log_message)
 {
+	int		amount_logged;
+
 	if (this->file == NULL)
 	{
 		std::cout << "Fail: log file not exist" << std::endl;
 		return ;
 	}
 	this->changeLogFileIfNeeded();
-	fprintf(this->file, "[%s] [ INFO ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	amount_logged = fprintf(this->file, "[%s] [ INFO ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	if (amount_logged <= 0) {
+		std::cout << "Fail: amount logged " << amount_logged << std::endl;
+	}
 }
 
 void	Tintin_reporter::LogWarning(const char *log_message)
 {
+	int		amount_logged;
+
 	if (this->file == NULL)
 	{
 		std::cout << "Fail: log file not exist" << std::endl;
 		return ;
 	}
 	this->changeLogFileIfNeeded();
-	fprintf(this->file, "[%s] [ WARNING ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	amount_logged = fprintf(this->file, "[%s] [ WARNING ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	if (amount_logged <= 0) {
+		std::cout << "Fail: amount logged " << amount_logged << std::endl;
+	}
 }
 
 void	Tintin_reporter::LogError(const char *log_message)
 {
+	int		amount_logged;
+
 	if (this->file == NULL)
 	{
 		std::cout << "Fail: log file not exist" << std::endl;
 		return ;
 	}
 	this->changeLogFileIfNeeded();
-	fprintf(this->file, "[%s] [ ERROR ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	amount_logged = fprintf(this->file, "[%s] [ ERROR ] - %s: %s\n", this->timer.FormatDateTime(), DAEMON_NAME, log_message);
+	if (amount_logged <= 0) {
+		std::cout << "Fail: amount logged " << amount_logged << std::endl;
+	}
 }
 
 const char	*Tintin_reporter::newFilePath()
@@ -53,7 +73,6 @@ const char	*Tintin_reporter::newFilePath()
 		this->timestamp = this->timer.GetTimestampTrimMinutes();
 		return strjoin(LOG_FOLDER, this->timer.FormatDateTimeWithoutMinutes(), ".log");
 	}
-	
 }
 
 void	Tintin_reporter::changeLogFileIfNeeded()
@@ -84,6 +103,7 @@ void	Tintin_reporter::createLogFile()
 	if (this->file == NULL)
 	{
 		std::cout << "Error: cant open file " << filePath << std::endl;
+		std::cout << "Looks like not enouph permissions" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }

@@ -1,6 +1,5 @@
 #include "locker.hpp"
 
-// const char	*gLockFilePath = "matt_daemon.lock";
 FILE		*gLockFile;
 
 bool	IsLocked(void)
@@ -17,9 +16,13 @@ bool	IsLocked(void)
 	return true;
 }
 
-void	Lock()
+bool	Lock()
 {
-	gLockFile = fopen(LOCK_FILE_PATH, "r");
+	gLockFile = fopen(LOCK_FILE_PATH, "w");
+	if (gLockFile == NULL) {
+		return false;
+	}
+	return true;
 }
 
 void	Unlock()

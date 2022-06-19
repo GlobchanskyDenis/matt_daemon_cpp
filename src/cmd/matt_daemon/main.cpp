@@ -23,28 +23,42 @@ int main(void)
 {
 	Tintin_reporter* logger = new Tintin_reporter();
 	Socket* sock = new Socket();
-	int		pid;
+	int				pid;
 
-	if (IsLocked()) {
-		logger->LogWarning("already locked");
+	/*	Проверка прав данных программе  */
+	if (opendir(LOG_FOLDER) == NULL)
+	{
+		if (mkdir(LOG_FOLDER, 0777) < 0)
+		{
+			logger->LogWarning("Looks like not enouph permissions");
+			std::cout << "Looks like not enouph permissions" << std::endl;
+			delete logger;
+			delete sock;
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	/*	Проверяю наличие Лок файла и создаю его если он не создан ранее  */
+	if (IsLocked() == true) {
+		logger->LogWarning("Already locked");
+		std::cout << "Already locked" << std::endl;
+		delete logger;
+		delete sock;
+		exit(-1);
+	}
+	if (Lock() == false) {
+		logger->LogWarning("Cannot Lock");
+		std::cout << "Cannot Lock" << std::endl;
 		delete logger;
 		delete sock;
 		exit(-1);
 	}
 
-	if (opendir(LOG_FOLDER) == NULL)
-	{
-		if (mkdir(LOG_FOLDER, 0777) < 0)
-		{
-			std::cout << "No premission I guess" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-	}
-			
-
+	/*	Демонизаци прораммы (делается форк, главная прога на этом заканчивает работу,
+	**	потомок (демон) продолжает работу в качестве фонового процесса)  */
 	switch (pid = fork()) {
 	case -1:
-		logger->LogError("cannot create system process");
+		logger->LogError("Cannot create system process");
 		delete logger;
 		delete sock;
 		exit(-1);
@@ -59,37 +73,36 @@ int main(void)
 		exit(0);
 	}
 
-	Lock();
-
 	if (sock->Dial(logger) < 0) {
-		logger->LogError("socket dial failed");
+		logger->LogError("Socket dial failed");
 		Unlock();
-		logger->LogInfo("lock file was removed");
+		logger->LogInfo("Lock file was removed");
 		delete logger;
 		delete sock;
 		exit(-1);
 	}
 
 	if (auth(sock, logger) < 0) {
-		logger->LogError("auth fail");
+		logger->LogError("Auth fail");
 		Unlock();
-		logger->LogInfo("lock file was removed");
+		logger->LogInfo("Lock file was removed");
 		delete logger;
 		delete sock;
 		exit(-1);
 	}
 	if (logLoop(sock, logger) < 0) {
-		logger->LogError("fail reading socket");
+		logger->LogError("Fail reading socket");
 		Unlock();
-		logger->LogInfo("lock file was removed");
+		logger->LogInfo("Lock file was removed");
 		delete logger;
 		delete sock;
 		exit(-1);
 	}
 
 	Unlock();
-	logger->LogInfo("lock file was removed");
+	logger->LogInfo("Lock file was removed");
 	delete logger;
 	delete sock;
+	exit(0);
 }
 
