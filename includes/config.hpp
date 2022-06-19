@@ -14,7 +14,7 @@
 # define SERVER_PASSWORD_HASH	"5f4dcc3b5aa765d61d8327deb882cf99" // "password"
 
 /*	Socket  */
-# define IS_TCP_SOCKET				true
+# define IS_TCP_SOCKET				false
 # define IP							"127.0.0.1"
 # define PORT						4242
 # define MAX_SOCKET_MESSAGE_LENGTH	1024

@@ -19,6 +19,33 @@ int	logLoop(Socket* sock, Tintin_reporter* logger) {
 	return 0;
 }
 
+#include <sys/wait.h>
+/*	Это логика работы супервизора который следит за остановкой дочернего процесса
+**	и по его завершению логгирует и корректно завершает работу  */
+void shutdownSupervisorLoop(Tintin_reporter* logger, int pid) {
+	int status;
+
+	do {
+		if (waitpid(pid, &status, WUNTRACED | WCONTINUED) == -1) {
+			logger->LogError("waitpid returned error");
+			break ;
+		}
+		if (WIFEXITED(status)) {
+			logger->LogInfo("exited");
+		} else if (WIFSIGNALED(status)) {
+			logger->LogInfo("killed by signal");
+		} else if (WIFSTOPPED(status)) {
+			logger->LogInfo("stopped by signal");
+		} else if (WIFCONTINUED(status)) {
+			logger->LogInfo("continued");
+		}
+	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+	Unlock();
+	logger->LogInfo("Lock file was removed");
+	delete logger;
+}
+
 int main(void)
 {
 	Tintin_reporter* logger = new Tintin_reporter();
@@ -55,7 +82,8 @@ int main(void)
 	}
 
 	/*	Демонизаци прораммы (делается форк, главная прога на этом заканчивает работу,
-	**	потомок (демон) продолжает работу в качестве фонового процесса)  */
+	**	потомок (демон) продолжает работу в качестве фонового процесса)
+	**	Цель данного форка - вернуть пользователю терминал  */
 	switch (pid = fork()) {
 	case -1:
 		logger->LogError("Cannot create system process");
@@ -69,39 +97,58 @@ int main(void)
 		/*	Это - процесс - родитель
 		**	Ничего не закрываю так как это повлияет на потомка
 		**	Вывожу в консоль pid чтобы можно было*/
-		std::cout << "pid " << pid << std::endl;
+		std::cout << "Программа создает два системных процесса (shutdown supervisor + socket supervisor)" << std::endl;
+		std::cout << "Gracefull shutdown supervisor pid " << pid << std::endl;
+		std::cout << "Вышеобозначенный пид убивать утилитой kill не нужно т.к. он отслеживает состояние процесса socket supervisor" << std::endl;
+		std::cout << "и сам завершит работу при завершении работы данного процесса (предварительно уведомив пользователя записью в лог файле)" << std::endl;
 		exit(0);
 	}
 
+	/*	Вторая демонизация программы (цель - выполнить механизм gracefull shutdown)
+	**	Процесс-родитель будет ответственен за закрытие файла лога,
+	**	а процесс-потомок будет заниматься работой с сокетом и будет ответственен за его закрытие  */
+	switch (pid = fork()) {
+	case -1:
+		logger->LogError("Cannot create system process");
+		delete logger;
+		delete sock;
+		exit(-1);
+	case 0:
+		/*	Это процесс - потомок (демон) socket supervisor  */
+		break ;
+	default:
+		/*	Это - процесс - родитель shutdown supervisor  */
+		shutdownSupervisorLoop(logger, pid);
+		exit(0);
+	}
+
+	/*	Дальше код работы с сокетом  */
 	if (sock->Dial(logger) < 0) {
 		logger->LogError("Socket dial failed");
-		Unlock();
-		logger->LogInfo("Lock file was removed");
-		delete logger;
+		// Unlock();
+		// logger->LogInfo("Lock file was removed");
+		// delete logger;
 		delete sock;
 		exit(-1);
 	}
 
 	if (auth(sock, logger) < 0) {
 		logger->LogError("Auth fail");
-		Unlock();
-		logger->LogInfo("Lock file was removed");
-		delete logger;
+		// Unlock();
+		// logger->LogInfo("Lock file was removed");
+		// delete logger;
 		delete sock;
 		exit(-1);
 	}
 	if (logLoop(sock, logger) < 0) {
 		logger->LogError("Fail reading socket");
-		Unlock();
-		logger->LogInfo("Lock file was removed");
-		delete logger;
+		// Unlock();
+		// logger->LogInfo("Lock file was removed");
+		// delete logger;
 		delete sock;
 		exit(-1);
 	}
 
-	Unlock();
-	logger->LogInfo("Lock file was removed");
-	delete logger;
 	delete sock;
 	exit(0);
 }
